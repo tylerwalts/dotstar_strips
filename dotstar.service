@@ -1,0 +1,10 @@
+[Unit]
+Description=Dotstar Pi Service
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/pi/DotStar_Christmas.py
+
+[Install]
+WantedBy=multi-user.target
