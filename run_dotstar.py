@@ -7,8 +7,8 @@ import digitalio
 import random
 
 # Define the LED strips
-strip_length = 36
-num_strips = 4
+strip_length = 32
+num_strips = 8
 num_pixels = strip_length * num_strips
 pixels = adafruit_dotstar.DotStar(board.SCK, board.MOSI, num_pixels, brightness=0.1, auto_write=False)
 
@@ -53,10 +53,7 @@ PURPLE = (180, 0, 255)
 MAGENTA = (255, 0, 20)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-#MERLOT = (110, 16, 88)
-#MERLOT = (47, 8, 38)
 MERLOT = (20, 4, 16)
-
 
 def init():
     check_pir()
@@ -99,7 +96,6 @@ def turn_it_down():
     else:
         print('Wait value is at max: ' + str(wait_value))
 
-
 def check_pir():
     global person_present
     global idle_count
@@ -126,16 +122,13 @@ def check_pir():
         turn_it_down()
         idle_count = idle_count + 1
 
-
 def blink(color, wait, times):
     init()
     for i in range(times):
         color_fill(color, wait)
         color_fill(BLACK, wait)
 
-
 def wheel(pos):
-    init()
     # Input a value 0 to 255 to get a color value.
     # The colours are a transition r - g - b - back to r.
     if pos < 0 or pos > 255:
@@ -196,8 +189,8 @@ def slice_alternating(wait):
     pixels.show()
     time.sleep(wait)
 
-
 def slice_rainbow(wait):
+    global num_pixels
     init()
     pixels[::6] = [RED] * (num_pixels // 6)
     pixels.show()
@@ -227,7 +220,6 @@ def color_cycle_opposite_ends(color):
         pixels.show()
         time.sleep(0.001 * wait_value)
 
-
 def color_cycle_bottom_up(color):
     init()
     for i in range(strip_length):
@@ -235,7 +227,6 @@ def color_cycle_bottom_up(color):
             pixels[(strip_length*j)-i] = color
         pixels.show()
         time.sleep(0.001 * wait_value)
-
 
 def color_cycle2(color, color2):
     init()
@@ -259,7 +250,6 @@ def color_shot(color):
         pixels.show()
         time.sleep(0.001 * wait_value)
 
-
 def rainbow_cycle(wait):
     init()
     for j in range(255):
@@ -273,24 +263,13 @@ def single_up(color, wait, strip, solid = False, strip_height = strip_length):
     init()
     global strip_length
     color_fill(BLACK, wait)
-    if strip % 2 == 0:
-        print("even strip: " + str(strip))
-        start_index = strip_length * strip -1
-        is_reversed = True
-    else:
-        print("odd strip: " + str(strip))
-        start_index = (strip - 1) * strip_length
-        is_reversed = False
+    start_index = strip_length * (strip - 1)
     pixels[start_index] = color
     pixels.show()
     time.sleep(wait)
-    for i in range(strip_height):
-        if is_reversed:
-            pixels[start_index - i] = color
-            if not solid: pixels[start_index - i + 1] = BLACK
-        else:
-            pixels[start_index + i] = color
-            if not solid: pixels[start_index + i - 1] = BLACK
+    for i in range(strip_height - 1):
+        pixels[start_index + i] = color
+        if not solid: pixels[start_index + i - 1] = BLACK
         pixels.show()
         time.sleep(wait)
 
@@ -298,32 +277,43 @@ def single_down(color, wait, strip, solid = False):
     init()
     global strip_length
     color_fill(BLACK, wait)
-    if strip % 2 == 0:
-        start_index = (strip - 1) * strip_length
-        print("even strip: " + str(strip) + ", start index: " + str(start_index))
-        is_reversed = False
-    else:
-        start_index = strip_length * (strip - 1) + strip_length - 1
-        print("odd strip: " + str(strip) + ", start index: " + str(start_index))
-        is_reversed = True
+    start_index = (strip - 1) * strip_length
     pixels[start_index] = color
     pixels.show()
     time.sleep(wait)
     for i in range(strip_length):
-        if is_reversed:
-            pixels[start_index - i] = color
-            if not solid: pixels[start_index - i + 1] = BLACK
-        else:
-            pixels[start_index + i] = color
-            if not solid: pixels[start_index + i - 1] = BLACK
+        pixels[start_index - i] = color
+        if not solid: pixels[start_index - i + 1] = BLACK
         pixels.show()
         time.sleep(wait)
 
-def fire(wait):
-    global strip_length
+def sparkle_pulse(sparkle_range):
     init()
-    for i in range(80):
-        strip = random.randint(1,4)
+    for i in range(sparkle_range):
+        color = (int(255 * (i/sparkle_range)), int(255 * (i/sparkle_range)), int(255 * (i/sparkle_range)))
+        print('color: ' + str(color))
+        sparkle(i * 5, color, 0.05 * (sparkle_range - i + 1) )
+    sparkle(40, WHITE, 0.04)
+
+def sparkle(num_flashes, color, wait):
+    for i in range(num_flashes):
+        random_fill(color, 9)
+        time.sleep(wait)
+
+def random_fill(color, odds_threshold = 5):
+    global num_pixels
+    color_fill(BLACK, 0.001)
+    for i in range(num_pixels):
+        light_odds = random.randint(0,10)
+        if (light_odds > odds_threshold):
+            pixels[i] = color
+    pixels.show()
+
+def fire(flames, wait):
+    global strip_length, num_strips
+    init()
+    for i in range(flames):
+        strip = random.randint(1,num_strips)
         color = random.randint(0,2)
         strip_height = random.randint(5, strip_length)
         colors = [RED, ORANGE, YELLOW]
@@ -335,10 +325,11 @@ def merlot(wait):
         strip = random.randint(1,4)
         single_up(MERLOT, wait, strip, True)
 
-def rain():
+def rain(drops):
+    global num_strips
     init()
-    for i in range(20):
-        strip = random.randint(1,4)
+    for i in range(drops):
+        strip = random.randint(1,num_strips)
         color = random.randint(0,11)
         wait = random.uniform(0, 0.04)
         colors = [BLUE, WHITE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE2, LIGHTBLUE3, LIGHTBLUE4, LIGHTBLUE5, LIGHTBLUE6, LIGHTBLUE7, LIGHTBLUE8, LIGHTBLUE9]
@@ -369,35 +360,32 @@ def circle(color, wait, times, blackout = True):
             time.sleep(wait)
         for j in range(num_strips - 1):
             last_index = index
-            if j % 2 == 0:
-                index = index + 1
-            else:
-                index = index + (strip_length * 2) - 1
+            index = index + 1
             pixels[index] = color
             if blackout: pixels[last_index] = BLACK
             pixels.show()
             time.sleep(wait*2)
         for j in range(strip_length - 1):
             last_index = index
-            if num_strips % 2 == 0:
-                index = index + 1
-            else:
-                index = index - 1
+            index = index + 1
             pixels[index] = color
             if blackout: pixels[last_index] = BLACK
             pixels.show()
             time.sleep(wait)
         for j in range(num_strips - 1):
             last_index = index
-            if j % 2 == 0:
-                index = index - (strip_length * 2) + 1
-            else:
-                index = index - 1
+            index = index - (strip_length * 2) + 1
             pixels[index] = color
             if blackout: pixels[last_index] = BLACK
             pixels.show()
             time.sleep(wait*2)
 
+def xmas_main():
+    slice_xmas(0.05)
+    color_cycle2(GREEN, RED)
+    color_cycle(GREEN)
+    color_cycle(RED)
+    color_cycle(WHITE)
 
 foo = False
 
@@ -410,50 +398,39 @@ while True:
     print("idle count= " + str(idle_count) + ", max = " + str(idle_count_max))
     if idle_count < idle_count_max:
 
-        circle(GREEN, 0.01, 1, False)
-        circle(RED, 0.01, 1, False)
-        circle(GREEN, 0.01, 1, False)
-        circle(RED, 0.01, 1, False)
+        #circle(GREEN, 0.01, 1, False)
 
         pulse()
 
-        slice_xmas(0.05 * wait_value)
+        sparkle_pulse(5)
+
+        color_fill(WHITE, 3)
+
+        fire(60, 0)
 
         pulse()
 
-        #single_up(RED, 0.01, 1)
-        #single_up(BLUE, 0.01, 2)
-        #single_up(GREEN, 0.01, 3)
-        #single_up(YELLOW, 0.01, 4)
+        rain(15)
 
-        merlot(0.01)
-        pulse()
-        fire(0)
-        pulse()
-        rain()
+        slice_alternating(0.5)
 
-    #elif foo:
+        color_cycle2(BLACK, BLACK)
 
-        color_cycle(GREEN)
-        color_cycle(RED)
-        color_cycle(WHITE)
-
-        color_cycle2(GREEN, RED)
-        color_cycle2(GREEN, RED)
+        color_cycle2(MERLOT, WHITE)
 
         #TODO: make a color_cycle_from_ends function, first half is cool. skip 2nd.
-        #Exas: color_cycle_ends(WHITE, WHITE)
-        #color_cycle2(WHITE, WHITE)
-        #color_cycle2(GREEN, GREEN)
-        #color_cycle2(RED, RED)
+        #Exa: color_cycle_ends(WHITE, WHITE)
+          #color_cycle2(WHITE, WHITE)
 
-        color_cycle_bottom_up(GREEN)
-        color_cycle_bottom_up(WHITE)
-        color_cycle_bottom_up(RED)
+        color_cycle_bottom_up(ORANGE)
+        color_cycle_bottom_up(BLACK)
+        color_cycle_bottom_up(YELLOW)
 
-        color_cycle_opposite_ends(GREEN)
-        color_cycle_opposite_ends(WHITE)
-        color_cycle_opposite_ends(RED)
+        #color_cycle_opposite_ends(GREEN)
+        pulse()
+
+        #slice_rainbow(0.05)
+        rainbow_cycle(0.05)
 
     else:
         color_fill(BLACK, 1)

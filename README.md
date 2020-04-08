@@ -1,8 +1,8 @@
-#DotStar-Illuminated Rackstem
- 
+# DotStar-Illuminated Racks
+
 This is for a project to add light and fun to some wine racks, but it could also be used for shelves or any set of ligh strips.  I wanted to be able to control the brightness and color, which I could have done with Phillips Hue or similar light strips, but I also wanted to add some automation with a motion sensor and leave options open for future sensor types, so I got a Raspberry Pi, a roll of DotStar light strips and set a few use case goals:
 
-* *Christmas Decorations: *I started this project in December, so the first requirement is for the lights to work, and for it to look festive for guests.
+* *Christmas Decorations:* I started this project in December, so the first requirement is for the lights to work, and for it to look festive for guests.
 * *Presence Detection:* Adding a PIR sensor to the Pi was easy, and I could use it to check and speed up the motion if a person is present and active, or slow it down if they stand still.
 * *Idle Mode:* When nobody is active for a while, turn it off to save energy.
 * *Wine Selection Mode:* When someone gets close to the racks, it should get brighter and help to select a bottle.
@@ -46,7 +46,7 @@ TODO
 Edit dotstar.service to have the right path, and copy to /lib/systemd/system/dotstar.service
 
 
-## Future Features
+### Future Features
 
 * Security:
   * Update to send email/SMS
