@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/home/pi/DotStar_Christmas.py
+ExecStart=/home/pi/dotstar_strips/run_dotstar.py
 
 [Install]
 WantedBy=multi-user.target
